@@ -43,11 +43,11 @@ LOCAL_PATH:= $(call my-dir)
 ###############################################################################
 
 include $(CLEAR_VARS)
+LOCAL_SDCLANG_LTO := true
+LOCAL_SDCLANG_LTO_LDFLAGS := -O3 -fPIC
 LOCAL_FDO_SUPPORT := true
-ifneq ($(strip $(TARGET_FDO_CFLAGS)),)
-	# This should be the last -Oxxx specified in LOCAL_CFLAGS
-	LOCAL_CFLAGS += -O2
-endif
+# This should be the last -Oxxx specified in LOCAL_CFLAGS
+LOCAL_CFLAGS += -O3
 
 LOCAL_ARM_MODE := thumb
 # used for testing
@@ -61,6 +61,10 @@ LOCAL_CFLAGS += \
 	-DSKIA_IMPLEMENTATION=1 \
 	-Wno-clobbered -Wno-error \
 	-fexceptions
+
+ifeq ($(ARCH_ARM_HAVE_NEON),true)
+  LOCAL_CFLAGS_arm += -funsafe-math-optimizations
+endif
 
 LOCAL_CPPFLAGS := \
 	-std=c++11 \
@@ -830,7 +834,11 @@ LOCAL_WHOLE_STATIC_LIBRARIES := libskia_static
 LOCAL_SHARED_LIBRARIES := \
         libcutils
 
-ifeq ($(TARGET_HAVE_QC_PERF),true)
+LOCAL_SDCLANG_LTO := true
+LOCAL_FDO_SUPPORT := true
+
+
+ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
         LOCAL_WHOLE_STATIC_LIBRARIES += libqc-skia
 endif
 
